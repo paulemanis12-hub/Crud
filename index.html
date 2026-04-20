@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CRUD</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+
+<div id="loginBox">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Contraseña">
+  <button onclick="registrar()">Registrarse</button>
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div id="tareasBox" style="display:none;">
+  <h2>Tareas</h2>
+  <input id="tarea">
+  <button onclick="agregar()">Agregar</button>
+  <ul id="lista"></ul>
+  <button onclick="logout()">Cerrar sesión</button>
+</div>
+
+</div>
+
+<script>
+
+if (localStorage.getItem("token")) mostrar();
+
+function registrar() {
+  fetch("/register", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      email: email.value,
+      password: password.value
+    })
+  }).then(()=>alert("Usuario creado"));
+}
+
+function login() {
+  fetch("/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      email: email.value,
+      password: password.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.token){
+      localStorage.setItem("token", d.token);
+      mostrar();
+    }
+  });
+}
+
+function mostrar(){
+  loginBox.style.display="none";
+  tareasBox.style.display="block";
+  cargar();
+}
+
+function cargar(){
+  fetch("/tareas", {
+    headers:{Authorization:localStorage.getItem("token")}
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    lista.innerHTML="";
+    data.forEach(t=>{
+      lista.innerHTML += `
+      <li>
+        ${t.completada ? "<s>"+t.texto+"</s>" : t.texto}
+        <button onclick="completar(${t.id})">✔</button>
+        <button onclick="editar(${t.id})">✏️</button>
+        <button onclick="eliminar(${t.id})">X</button>
+      </li>`;
+    });
+  });
+}
+
+function agregar(){
+  fetch("/tareas",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:localStorage.getItem("token")
+    },
+    body:JSON.stringify({texto:tarea.value})
+  }).then(cargar);
+}
+
+function eliminar(id){
+  fetch("/tareas/"+id,{
+    method:"DELETE",
+    headers:{Authorization:localStorage.getItem("token")}
+  }).then(cargar);
+}
+
+function completar(id){
+  fetch("/tareas/"+id,{
+    method:"PUT",
+    headers:{Authorization:localStorage.getItem("token")}
+  }).then(cargar);
+}
+
+function editar(id){
+  let texto = prompt("Nuevo texto:");
+  fetch("/tareas/editar/"+id,{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:localStorage.getItem("token")
+    },
+    body:JSON.stringify({texto})
+  }).then(cargar);
+}
+
+function logout(){
+  localStorage.removeItem("token");
+  location.reload();
+}
+
+</script>
+
+</body>
+</html>
