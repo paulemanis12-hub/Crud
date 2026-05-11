@@ -1,22 +1,146 @@
-body{
-  font-family: Arial;
-  background:#e3f2fd;
-  display:flex;
-  justify-content:center;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.container{
-  background:white;
-  padding:20px;
-  margin-top:50px;
-  width:300px;
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
-input,button{
-  margin:5px;
-  padding:8px;
+.container {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  padding: 40px;
+  width: 500px;
+  max-width: 100%;
 }
 
-li{
-  margin:5px;
+h2 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-register {
+  background: #4CAF50;
+  color: white;
+  flex: 1;
+}
+
+.btn-login {
+  background: #2196F3;
+  color: white;
+  flex: 1;
+}
+
+.btn-logout {
+  background: #f44336;
+  color: white;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.add-tarea {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-tarea input {
+  flex: 1;
+  margin: 0;
+}
+
+.add-tarea button {
+  background: #4CAF50;
+  color: white;
+}
+
+ul {
+  list-style: none;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+li {
+  background: #f8f9fa;
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+li:hover {
+  background: #e9ecef;
+}
+
+.completada {
+  text-decoration: line-through;
+  color: #6c757d;
+}
+
+.tarea-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-complete {
+  background: #28a745;
+  color: white;
+}
+
+.btn-edit {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.empty {
+  text-align: center;
+  color: #6c757d;
+  justify-content: center;
 }

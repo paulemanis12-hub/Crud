@@ -3,16 +3,16 @@ const mysql = require("mysql2");
 const conexion = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
-  database: "crud_db"
+  password: "",        // Si XAMPP tiene contraseña ponla aquí
+  database: "sistema_tareas"   // 👈 NUEVO NOMBRE
 });
 
 conexion.connect(function(err) {
   if (err) {
-    console.log("Error de conexión:", err);
-  } else {
-    console.log("Conectado a MySQL");
+    console.error("❌ Error de conexión:", err);
+    return;
   }
+  console.log("✅ Conectado a MySQL - Base de datos: sistema_tareas");
 });
 
 module.exports = conexion;

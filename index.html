@@ -1,131 +1,157 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CRUD</title>
+  <title>CRUD con Login</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <div class="container">
+  <div id="loginBox">
+    <h2>📋 Login
+    <input id="email" placeholder="Email" type="email">
+    <input id="password" type="password" placeholder="Contraseña">
+    <div class="button-group">
+      <button onclick="registrar()" class="btn-register">📝 Registrarse</button>
+      <button onclick="login()" class="btn-login">🔐 Entrar</button>
+    </div>
+  </div>
 
-<div id="loginBox">
-  <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Contraseña">
-  <button onclick="registrar()">Registrarse</button>
-  <button onclick="login()">Entrar</button>
-</div>
-
-<div id="tareasBox" style="display:none;">
-  <h2>Tareas</h2>
-  <input id="tarea">
-  <button onclick="agregar()">Agregar</button>
-  <ul id="lista"></ul>
-  <button onclick="logout()">Cerrar sesión</button>
-</div>
-
+  <div id="tareasBox" style="display:none;">
+    <h2>✅ Mis Tareas</h2>
+    <div class="add-tarea">
+      <input id="tarea" placeholder="Nueva tarea..." autocomplete="off">
+      <button onclick="agregar()">➕ Agregar</button>
+    </div>
+    <ul id="lista"></ul>
+    <button onclick="logout()" class="btn-logout">🚪 Cerrar sesión</button>
+  </div>
 </div>
 
 <script>
-
 if (localStorage.getItem("token")) mostrar();
 
-function registrar() {
-  fetch("/register", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      email: email.value,
-      password: password.value
-    })
-  }).then(()=>alert("Usuario creado"));
-}
-
-function login() {
-  fetch("/login", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      email: email.value,
-      password: password.value
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.token){
-      localStorage.setItem("token", d.token);
-      mostrar();
-    }
+async function registrar() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  
+  const res = await fetch("/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
   });
+  const data = await res.json();
+  alert(data.mensaje);
+  if (res.ok) {
+    document.getElementById("email").value = "";
+    document.getElementById("password").value = "";
+  }
 }
 
-function mostrar(){
-  loginBox.style.display="none";
-  tareasBox.style.display="block";
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+    mostrar();
+  } else {
+    alert(data.mensaje);
+  }
+}
+
+function mostrar() {
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("tareasBox").style.display = "block";
   cargar();
 }
 
-function cargar(){
-  fetch("/tareas", {
-    headers:{Authorization:localStorage.getItem("token")}
-  })
-  .then(r=>r.json())
-  .then(data=>{
-    lista.innerHTML="";
-    data.forEach(t=>{
-      lista.innerHTML += `
+async function cargar() {
+  const token = localStorage.getItem("token");
+  const res = await fetch("/api/tareas", {
+    headers: { "Authorization": token }
+  });
+  const data = await res.json();
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+  
+  if (data.length === 0) {
+    lista.innerHTML = "<li class='empty'>📭 No hay tareas</li>";
+    return;
+  }
+  
+  data.forEach(t => {
+    lista.innerHTML += `
       <li>
-        ${t.completada ? "<s>"+t.texto+"</s>" : t.texto}
-        <button onclick="completar(${t.id})">✔</button>
-        <button onclick="editar(${t.id})">✏️</button>
-        <button onclick="eliminar(${t.id})">X</button>
+        <span class="${t.completada ? 'completada' : ''}">${t.texto}</span>
+        <div class="tarea-buttons">
+          <button onclick="completar(${t.id})" class="btn-complete">✅</button>
+          <button onclick="editar(${t.id})" class="btn-edit">✏️</button>
+          <button onclick="eliminar(${t.id})" class="btn-delete">❌</button>
+        </div>
       </li>`;
-    });
   });
 }
 
-function agregar(){
-  fetch("/tareas",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization:localStorage.getItem("token")
+async function agregar() {
+  const texto = document.getElementById("tarea").value;
+  if (!texto) return;
+  
+  await fetch("/api/tareas", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": localStorage.getItem("token")
     },
-    body:JSON.stringify({texto:tarea.value})
-  }).then(cargar);
+    body: JSON.stringify({ texto })
+  });
+  document.getElementById("tarea").value = "";
+  cargar();
 }
 
-function eliminar(id){
-  fetch("/tareas/"+id,{
-    method:"DELETE",
-    headers:{Authorization:localStorage.getItem("token")}
-  }).then(cargar);
+async function eliminar(id) {
+  if (!confirm("¿Eliminar?")) return;
+  await fetch(`/api/tareas/${id}`, {
+    method: "DELETE",
+    headers: { "Authorization": localStorage.getItem("token") }
+  });
+  cargar();
 }
 
-function completar(id){
-  fetch("/tareas/"+id,{
-    method:"PUT",
-    headers:{Authorization:localStorage.getItem("token")}
-  }).then(cargar);
+async function completar(id) {
+  await fetch(`/api/tareas/${id}`, {
+    method: "PUT",
+    headers: { "Authorization": localStorage.getItem("token") }
+  });
+  cargar();
 }
 
-function editar(id){
+async function editar(id) {
   let texto = prompt("Nuevo texto:");
-  fetch("/tareas/editar/"+id,{
-    method:"PUT",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization:localStorage.getItem("token")
+  if (!texto) return;
+  
+  await fetch(`/api/tareas/editar/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": localStorage.getItem("token")
     },
-    body:JSON.stringify({texto})
-  }).then(cargar);
+    body: JSON.stringify({ texto })
+  });
+  cargar();
 }
 
-function logout(){
+function logout() {
   localStorage.removeItem("token");
   location.reload();
 }
-
 </script>
 
 </body>
