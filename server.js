@@ -7,9 +7,9 @@ const path = require("path");
 const app = express();
 
 app.use(express.json());
-app.use(express.static(__dirname));  // Sirve index.html, styles.css
+app.use(express.static(__dirname));  
 
-// ========== MIDDLEWARE PARA RUTAS PROTEGIDAS ==========
+
 function verificarToken(req, res, next) {
   const token = req.headers.authorization;
 
